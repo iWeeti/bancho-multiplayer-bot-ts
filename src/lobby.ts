@@ -96,20 +96,25 @@ export class LobbyManager {
             ? (new Date().getTime() - this.startedPlayingTime.getTime()) / 1000
             : 0;
         this.startedPlayingTime = null;
-        for (const slot of this.lobby.slots) {
-            if (!slot || !slot.user) continue;
-            try {
-                await saveMostRecentScore(
-                    slot.user.id,
-                    this.lobby.id,
-                    playTime
-                );
-            } catch {}
-        }
+        setTimeout(async () => {
+            for (const slot of this.lobby.slots) {
+                if (!slot || !slot.user) continue;
+                try {
+                    await saveMostRecentScore(
+                        slot.user.id,
+                        this.lobby.id,
+                        playTime
+                    );
+                } catch (e) {
+                    logger.error(`Failed to save recent score\n${e}`);
+                }
+            }
+        }, 5000);
     }
 
     destroy() {
         this.realtimeChannel?.unsubscribe();
+        if (this.startTimeout) clearTimeout(this.startTimeout);
     }
 
     async onMessage(message: BanchoMessage) {
