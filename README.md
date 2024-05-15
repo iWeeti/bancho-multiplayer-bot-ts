@@ -1,4 +1,6 @@
-# bancho-multiplayer-bot-ts
+# Auto Host Rotate Bot
+
+![lobby banner](https://dev.autohostrotate.com/banner)
 
 To install dependencies:
 
