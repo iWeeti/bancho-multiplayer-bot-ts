@@ -10,6 +10,8 @@ bun install
 
 To run:
 
+> Make sure you have done everything in [Configuring](#configuring) first!
+
 ```bash
 bun run src/index.ts
 ```
