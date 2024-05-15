@@ -6,7 +6,6 @@ export default {
     help: "Shows the queue.",
     syntax: "queue",
     async execute({ channel, lobby }) {
-        console.log(lobby.queue);
         await channel.sendMessage(
             `Queue: ${lobby.queue
                 .map((pl) => pl?.user?.username ?? "Loading...")
