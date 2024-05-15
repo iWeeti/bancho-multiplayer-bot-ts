@@ -152,7 +152,7 @@ async function getLobbyData(
             let imageData: string | undefined;
             if (opts.downloadImages) {
                 try {
-                    const imageUrl = `https://assets.ppy.sh/beatmaps/${b.setId}/covers/cover.jpg`;
+                    const imageUrl = `https://assets.ppy.sh/beatmaps/${b.setId}/covers/card@2x.jpg`;
                     const { data: imageBuffer } = await axios.get(imageUrl, {
                         responseType: "arraybuffer",
                     });

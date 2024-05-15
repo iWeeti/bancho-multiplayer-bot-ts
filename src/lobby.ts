@@ -31,6 +31,9 @@ export class LobbyManager {
     skipVoters: BanchoUser[] = [];
     realtimeChannel: RealtimeChannel | null = null;
     startedPlayingTime: Date | null = null;
+
+    countStartedBeatmap = 0;
+    countLeftDuringBeatmap = 0;
     constructor(
         config: Database["public"]["Tables"]["lobby"]["Row"],
         channel: BanchoMultiplayerChannel,
@@ -57,6 +60,7 @@ export class LobbyManager {
         this.lobby.on("playing", this.onPlaying.bind(this));
         this.lobby.on("matchStarted", () => {
             this.startedPlayingTime = new Date();
+            this.countStartedBeatmap = this.playerCount;
         });
         this.lobby.on("matchFinished", this.onMatchFinished.bind(this));
         this.channel.on("message", this.onMessage.bind(this));
@@ -96,6 +100,29 @@ export class LobbyManager {
             ? (new Date().getTime() - this.startedPlayingTime.getTime()) / 1000
             : 0;
         this.startedPlayingTime = null;
+        const { data: game, error } = await supabase
+            .from("game")
+            .insert({
+                lobby_id: this.lobby.id,
+                beatmap_id: this.lobby.beatmapId,
+                time: playTime,
+                count_left: this.countLeftDuringBeatmap,
+                count_finished:
+                    this.countStartedBeatmap - this.countLeftDuringBeatmap,
+                count_passed: this.lobby.scores.reduce((acc, cur) => {
+                    if (!cur) return acc;
+
+                    return acc + (cur.pass ? 1 : 0);
+                }, 0),
+            })
+            .select()
+            .single();
+        if (!game) {
+            logger.error(
+                `Failed to save game: ${JSON.stringify(error, null, 2)}`
+            );
+            return;
+        }
         setTimeout(async () => {
             for (const slot of this.lobby.slots) {
                 if (!slot || !slot.user) continue;
@@ -103,7 +130,8 @@ export class LobbyManager {
                     await saveMostRecentScore(
                         slot.user.id,
                         this.lobby.id,
-                        playTime
+                        playTime,
+                        game.id
                     );
                 } catch (e) {
                     logger.error(`Failed to save recent score\n${e}`);
@@ -131,6 +159,14 @@ export class LobbyManager {
         if (playing) {
             if (!(await this.checkLobbyConfig())) {
                 this.previousMap = this.lobby.beatmap;
+            }
+            if (!this.checkBeatmap(this.lobby.beatmap)) {
+                await this.lobby.abortMatch();
+                await this.setNextHost();
+                await this.channel.sendMessage(
+                    "Aborted a match with an invalid beatmap and skipped the host."
+                );
+                return;
             }
         }
 
@@ -205,9 +241,11 @@ export class LobbyManager {
         const d = new Date(0);
         d.setSeconds(beatmap.totalLength);
         await this.channel.sendMessage(
-            `(Star Rating: ${beatmap.stars} | ${
+            `(Star Rating: ${beatmap.stars} | ${getBeatmapRankedStatusLabel(
                 beatmap.rankedStatus
-            } | Length: ${d.toISOString().slice(14, 19)} | BPM: ${beatmap.bpm})`
+            )} | Length: ${d.toISOString().slice(14, 19)} | BPM: ${
+                beatmap.bpm
+            })`
         );
         const pp = await calculatePPForMap(beatmap.id);
         await this.channel.sendMessage(
@@ -321,6 +359,7 @@ export class LobbyManager {
     }
 
     async setNextHost() {
+        this.skipVoters = [];
         const nextHost = this.queue.shift();
         if (!nextHost) return;
         await this.lobby.setHost(`#${nextHost.user.id}`);
@@ -329,6 +368,7 @@ export class LobbyManager {
     }
 
     async onPlayerLeft(player: BanchoLobbyPlayer) {
+        if (this.lobby.playing) this.countLeftDuringBeatmap += 1;
         this.queue = this.queue.filter(
             (p) => p?.user?.ircUsername !== player?.user?.ircUsername
         );
@@ -402,5 +442,24 @@ export class LobbyManager {
         if (!updated) throw new Error("Failed to save config to Supabase");
 
         this.config = updated;
+    }
+}
+
+function getBeatmapRankedStatusLabel(status: number) {
+    switch (status) {
+        case -2:
+            return "Graveyard";
+        case -1:
+            return "WIP";
+        case 0:
+            return "Pending";
+        case 1:
+            return "Ranked";
+        case 2:
+            return "Approved";
+        case 3:
+            return "Qualified";
+        case 4:
+            return "Loved";
     }
 }

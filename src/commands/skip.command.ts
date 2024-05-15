@@ -37,13 +37,7 @@ export default {
             return;
         } else {
             await channel.sendMessage(
-                `\[${lobby.skipVoters.length}/${channel.lobby.slots.reduce(
-                    (acc, cur) => {
-                        if (cur) return acc + 1;
-                        return acc;
-                    },
-                    0
-                )}\] ${message.user.username}, Voted to skip the host.`
+                `[${lobby.skipVoters.length}/${minVotes}] ${message.user.username}, Voted to skip the host.`
             );
         }
     },

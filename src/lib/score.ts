@@ -15,7 +15,8 @@ export async function getPlayerRecentScore(userId: number) {
 export async function saveMostRecentScore(
     userId: number,
     lobbyId: number,
-    time: number
+    time: number,
+    gameId: number
 ) {
     const score = await getPlayerRecentScore(userId);
 
@@ -34,5 +35,6 @@ export async function saveMostRecentScore(
         time, // todo implement
         total_score: score.score,
         created_at: score.date.toISOString(),
+        game_id: gameId,
     });
 }

@@ -8,9 +8,14 @@ export default {
     async execute({ channel, lobby }) {
         await channel.sendMessage(
             `Queue: ${lobby.queue
-                .map((pl) => pl?.user?.username ?? "Loading...")
-                .join(", ")
-                .slice(0, 100)}`
+                .map((pl) =>
+                    pl.user.username
+                        ? `${pl.user.username.at(
+                              0
+                          )}\u200b${pl.user.username.slice(1)}`
+                        : "Loading..."
+                )
+                .join(", ")}`
         );
     },
 } satisfies Command;
