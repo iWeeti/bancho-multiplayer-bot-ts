@@ -29,6 +29,7 @@ export class LobbyManager {
     previousMap: Beatmap | undefined;
     stopVoters: BanchoUser[] = [];
     skipVoters: BanchoUser[] = [];
+    startVoters: BanchoUser[] = [];
     realtimeChannel: RealtimeChannel | null = null;
     startedPlayingTime: Date | null = null;
 
@@ -152,6 +153,7 @@ export class LobbyManager {
     async onPlaying(playing: boolean) {
         this.stopVoters = [];
         this.skipVoters = [];
+        this.startVoters = [];
         if (playing && this.startTimeout) {
             clearTimeout(this.startTimeout);
         }
@@ -377,6 +379,7 @@ export class LobbyManager {
         }
         this.stopVoters = this.stopVoters.filter((u) => u !== player.user);
         this.skipVoters = this.skipVoters.filter((u) => u !== player.user);
+        this.startVoters = this.startVoters.filter((u) => u !== player.user);
 
         if (
             this.lobby.slots.reduce((acc, cur) => {
