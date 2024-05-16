@@ -4,6 +4,7 @@ import type {
     BanchoMultiplayerChannel,
 } from "bancho.js";
 import { Glob } from "bun";
+import { platform } from "os";
 import { env } from "../lib/env";
 import { logger } from "../lib/logger";
 import type { LobbyManager } from "../lobby";
@@ -30,7 +31,7 @@ export const commands = new Map<string, Command>();
 const glob = new Glob("**/*.command.ts");
 
 for await (const file of glob.scan(".")) {
-    const split = file.split("\\");
+    const split = file.split(platform() === "win32" ? "\\" : "/");
     const fileName = split[split.length - 1].replace(/\.ts$/, "");
     const command = (await import(`./${fileName}`)).default as Command;
     logger.info(`Loaded command: ${command.name}`);

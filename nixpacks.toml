@@ -1,0 +1,25 @@
+providers = []
+buildImage = 'docker.io/oven/bun:latest'
+# buildImage = 'ghcr.io/railwayapp/nixpacks:ubuntu-1711411379'
+
+[variables]
+CI = 'true'
+NIXPACKS_METADATA = 'node'
+NODE_ENV = 'production'
+NPM_CONFIG_PRODUCTION = 'false'
+[phases.build]
+dependsOn = ['install']
+cacheDirectories = ['node_modules/.cache']
+
+[phases.install]
+dependsOn = ['setup']
+cmds = ['bun i --no-save']
+cacheDirectories = ['/root/.bun']
+paths = ['/app/node_modules/.bin']
+
+[phases.setup]
+nixOverlays = ['https://github.com/railwayapp/nix-npm-overlay/archive/main.tar.gz']
+nixpkgsArchive = 'bf744fe90419885eefced41b3e5ae442d732712d'
+
+[start]
+cmd = "bun run src/index.ts"
