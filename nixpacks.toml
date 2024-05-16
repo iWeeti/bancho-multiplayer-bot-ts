@@ -16,5 +16,10 @@ cmds = ['bun i --no-save']
 cacheDirectories = ['/root/.bun']
 paths = ['/app/node_modules/.bin']
 
+[phases.setup]
+nixPkgs = []
+nixOverlays = []
+nixpkgsArchive = ""
+
 [start]
 cmd = "bun run src/index.ts"
