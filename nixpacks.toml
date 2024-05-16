@@ -1,4 +1,4 @@
-providers = []
+providers = ['bun', 'node']
 buildImage = 'docker.io/oven/bun:latest'
 
 [variables]
