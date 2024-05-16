@@ -245,9 +245,11 @@ export class LobbyManager {
         await this.channel.sendMessage(
             `(Star Rating: ${beatmap.stars} | ${getBeatmapRankedStatusLabel(
                 beatmap.rankedStatus
-            )} | Length: ${d.toISOString().slice(14, 19)} | BPM: ${
-                beatmap.bpm
-            })`
+            )} | Length: ${d
+                .toISOString()
+                .slice(11, 19)
+                .split(":")
+                .join(":\u200b")} | BPM: ${beatmap.bpm})`
         );
         const pp = await calculatePPForMap(beatmap.id);
         await this.channel.sendMessage(

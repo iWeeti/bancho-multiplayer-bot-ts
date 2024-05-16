@@ -48,7 +48,7 @@ export async function handleCommand(
     if (!message.content.startsWith(env.PREFIX)) return;
 
     const args = message.content.slice(env.PREFIX.length).split(/\s+/g);
-    const commandName = args.shift();
+    const commandName = args.shift()?.toLowerCase();
 
     if (!commandName) return;
 

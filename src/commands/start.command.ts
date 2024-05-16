@@ -8,6 +8,11 @@ export default {
         const arg = args.shift();
         const seconds = arg ? parseInt(arg) : undefined;
 
+        if (channel.lobby.playing) {
+            await channel.sendMessage("Already playing...");
+            return;
+        }
+
         if (seconds) {
             if (
                 message.user.ircUsername !==
